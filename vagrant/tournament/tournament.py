@@ -16,7 +16,7 @@ def deleteMatches():
     db = connect()
     c = db.cursor()
     c.execute("DELETE FROM matches")
-    c.commit()
+    db.commit()
     db.close()
 
 def deletePlayers():
@@ -24,7 +24,7 @@ def deletePlayers():
     db = connect()
     c = db.cursor()
     c.execute("DELETE FROM players")
-    c.commit()
+    db.commit()
     db.close()
 
 def countPlayers():
@@ -34,7 +34,7 @@ def countPlayers():
     c.execute("SELECT COUNT(*) FROM players")
     row = c.fetchone()
     db.close()
-    return row
+    return row[0]
 
 def getPlayerName(id):
     """Returns the name of the player based on the ID."""
@@ -43,7 +43,7 @@ def getPlayerName(id):
     c.execute("SELECT name FROM players where p_id=(%s)",(name,))
     row = c.fetchone()
     db.close()
-    return row
+    return row[0]
 
 
 def registerPlayer(name):
@@ -56,7 +56,8 @@ def registerPlayer(name):
       name: the player's full name (need not be unique).
     """
     db = connect()
-    db.execute("INSERT INTO players (NAME) VALUES (%s)",(name,))
+    c = db.cursor()
+    c.execute("INSERT INTO players (NAME) VALUES (%s)",(name,))
     db.commit()
     db.close()
 
@@ -73,18 +74,7 @@ def playerStandings():
         wins: the number of matches the player has won
         matches: the number of matches the player has played
     """
-    sSQL = "SELECT players.id as pid,(p1_count + p2_count) as matches, wins.count_wins as W \
-    FROM players left join \
-    (SELECT p1_id as p_id,COUNT(p1_id) as n_matches FROM matches GROUP BY p1_id) AS p1_count \
-     ON players.id = p1_count.p1_id join \
-    (SELECT p2_id as p_id,COUNT(p2_id) as n_matches FROM matches GROUP BY p2_id) AS p2_count \
-    on p1_count.p1_id = p2_count.p2_id join \
-    (SELECT w as p_id,COUNT(w) as count_wins FROM matches GROUP BY w) AS wins \
-    on p2_count.p2_id = wins.w \
-    WHERE p2_count.p_id = p1_count.p_id and players.id=p2_count.p_id \
-    ORDER BY w"
-
-
+    sSQL = "SELECT * FROM standings_view"
     db = connect()
     c = db.cursor()
     c.execute(sSQL)
