@@ -5,13 +5,13 @@ CREATE DATABASE tournament;
 --
 CREATE TABLE players (
     p_id SERIAL PRIMARY KEY,
-    NAME VARCHAR(50)
+    name VARCHAR(50)
 );
 
-CREATE TABLE tournament (
-    t_id SERIAL PRIMARY KEY,
-    NAME VARCHAR(50)
-);
+--CREATE TABLE tournament (
+--    t_id SERIAL PRIMARY KEY,
+--    name VARCHAR(50)
+--);
 
 CREATE TABLE matches (
     m_id SERIAL PRIMARY KEY,
@@ -20,9 +20,9 @@ CREATE TABLE matches (
 );
 
 CREATE VIEW standings_view AS
-SELECT p1_count.p_id as pid,(p1_count.n_matches + p2_count.n_matches) as matches, wins.count_wins as W
+SELECT p1_count.p_id as pid,name,wins.count_wins as wins, (p1_count.n_matches + p2_count.n_matches) as matches
     FROM
-    (SELECT p_id,COUNT(winner) as n_matches
+    (SELECT p_id, NAME,COUNT(winner) as n_matches
         FROM players left join matches on players.p_id = matches.winner
         GROUP BY players.p_id) AS p1_count
     left join
@@ -34,7 +34,7 @@ SELECT p1_count.p_id as pid,(p1_count.n_matches + p2_count.n_matches) as matches
         FROM players left join matches on players.p_id = matches.winner
         GROUP BY players.p_id) AS wins
     on p2_count.p_id = wins.p_id
-    ORDER BY W DESC,p1_count.p_id;
+    ORDER BY wins DESC,p1_count.p_id;
 -- Put your SQL 'create table' statements in this file; also 'create view'
 -- statements if you choose to use it.
 --
